@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Model Pengguna (User)
+// Menggabungkan data dari 'registrasi' dan 'calculate calorie'
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  nama      String
+  password  String   // Akan di-hash
+  role      Role     @default(PENGGUNA_UMUM)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Data dari Mockup "Calculate your calorie!"
+  // Dibuat opsional (?) agar user bisa register dulu
+  // baru mengisi ini di halaman 'calculate'
+  gender    Gender? // 'Male' atau 'Female'
+  age       Int?
+  height    Float? // tinggiBadan
+  weight    Float? // beratBadan
+
+  // Hasil kalkulasi BMR/TDEE
+  // "sasaran kalori" di mockup Timeline
+  targetCalories    Float? // Kalori target harian (misal: cutting)
+  targetProtein     Float?
+  targetCarbs       Float?
+  targetFat         Float?
+
+  // Relasi
+  posts        Post[]
+  foodLogs     FoodLog[]
+  exerciseLogs ExerciseLog[]
+  postsLiked   Like[]
+  comments     Comment[]
+  
+  // Relasi untuk summary harian (untuk 'streak')
+  dailySummaries DailyLogSummary[]
+}
+
+enum Role {
+  PENGGUNA_UMUM
+  AHLI_GIZI
+  ADMIN
+}
+
+// Enum untuk Gender dari mockup 'Calculate'
+enum Gender {
+  MALE
+  FEMALE
+}
+
+// Model Makanan (Master Data)
+// Dari mockup "Mengelola Makanan" / "Tambah Makanan"
+model Food {
+  id      String  @id @default(uuid())
+  nama    String  @unique
+  kalori  Float // Total kalori per porsi standar
+  protein Float
+  carbs   Float
+  fat     Float
+
+  // Relasi: Makanan ini bisa dilog oleh banyak user
+  logs FoodLog[]
+}
+
+// Model Olahraga (Master Data)
+// Dari deskripsi 'Rekomendasi'
+model Exercise {
+  id                  String  @id @default(uuid())
+  namaKegiatan        String  @unique
+  // Kalori terbakar per menit (lebih fleksibel)
+  caloriesBurnPerMinute Float
+
+  // Relasi
+  logs ExerciseLog[]
+}
+
+// Model Log Makanan Harian
+// Untuk 'Timeline' (Sarapan, Makan Siang, dll)
+model FoodLog {
+  id        String   @id @default(uuid())
+  userId    String
+  foodId    String
+  tanggal   DateTime @db.Date // Kita hanya peduli TANGGAL-nya
+  porsi     Float    @default(1)
+  
+  // Tipe makanan dari mockup 'Timeline'
+  mealType  MealType
+
+  // Relasi
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  food Food @relation(fields: [foodId], references: [id])
+  
+  // Index untuk mempercepat query log harian user
+  @@index([userId, tanggal])
+}
+
+// Enum untuk Tipe Makanan
+enum MealType {
+  SARAPAN
+  MAKAN_SIANG
+  MAKAN_MALAM
+  KUDAPAN // 'Kudapan' atau 'Cemilan'
+}
+
+// Model Log Olahraga Harian
+// Untuk 'Timeline' (mengurangi kalori)
+model ExerciseLog {
+  id                String   @id @default(uuid())
+  userId            String
+  exerciseId        String
+  tanggal           DateTime @db.Date // Kita hanya peduli TANGGAL-nya
+  durationInMinutes Int      // Durasi olahraga dalam menit
+
+  // Relasi
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@index([userId, tanggal])
+}
+
+// Model Pencapaian / Postingan (Social Media)
+// Dari mockup 'Timeline'
+model Post {
+  id         String   @id @default(uuid())
+  userId     String
+  deskripsi  String
+  // Mockup 'Timeline' menunjukkan ada gambar di post
+  imageUrl   String?
+  sharedDate DateTime @default(now())
+
+  // Relasi
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Relasi untuk fitur sosmed
+  likes    Like[]
+  comments Comment[]
+
+  @@index([userId])
+}
+
+// Model 'Like' untuk Postingan
+model Like {
+  id     String @id @default(uuid())
+  userId String
+  postId String
+
+  // Relasi
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  // User hanya bisa like satu kali per post
+  @@unique([userId, postId])
+}
+
+// Model 'Comment' untuk Postingan
+model Comment {
+  id     String   @id @default(uuid())
+  userId String
+  postId String
+  text   String
+  date   DateTime @default(now())
+
+  // Relasi
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+}
+
+// Model untuk 'Streak Counts' di 'Timeline'
+// Ini adalah tabel summary agar tidak perlu kalkulasi berat setiap saat
+model DailyLogSummary {
+  id                String   @id @default(uuid())
+  userId            String
+  date              DateTime @db.Date // Tanggal log
+  totalCaloriesIn   Float    @default(0)
+  totalCaloriesOut  Float    @default(0)
+
+  // Relasi
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Setiap user hanya punya 1 summary per hari
+  @@unique([userId, date])
+}
