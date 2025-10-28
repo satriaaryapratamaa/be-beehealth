@@ -1,9 +1,7 @@
-// src/models/user.model.js
-
 import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-// --- Fungsi untuk Autentikasi ---
+
 
 export const findUserByEmail = (email) => {
   return prisma.user.findUnique({
@@ -35,11 +33,9 @@ export const createUser = async (data) => {
 };
 
 // --- Fungsi untuk Profil User ---
-
 export const findUserById = (id) => {
   return prisma.user.findUnique({
     where: { id: id },
-    // Pindahkan 'select' ke model agar controller bersih
     select: {
       id: true,
       email: true,

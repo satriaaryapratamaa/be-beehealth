@@ -1,18 +1,14 @@
-// src/middleware/auth.middleware.js
-
 import jwt from 'jsonwebtoken';
 
-// Fungsi ini sudah ada
-export const protect = (req, res, next) => {
-  // ... (isi fungsi protect sama seperti sebelumnya)
-  // ...
-    let token;
 
+export const protect = (req, res, next) => {
+
+    let token;
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = decoded; // req.user = { userId: '...', role: '...' }
+            req.user = decoded; 
             next();
         } catch (error) {
         res.status(401).json({ message: 'Token tidak valid, otorisasi ditolak.' });
@@ -24,8 +20,6 @@ export const protect = (req, res, next) => {
     }
 };
 
-// --- TAMBAHKAN FUNGSI INI ---
-// Middleware ini harus dijalankan SETELAH 'protect'
 export const isAdmin = (req, res, next) => {
     if (req.user && req.user.role === 'ADMIN') {
         next();

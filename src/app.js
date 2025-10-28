@@ -11,29 +11,29 @@ import exerciseRoutes from './routes/exercise.routes.js';
 
 // Ubah file ini menjadi FUNGSI yang di-export
 export function createApp(prisma) {
-  const app = express();
+    const app = express();
 
   // Middleware
-  app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+    app.use(cors());
+    app.use(express.json());
+    app.use(express.urlencoded({ extended: true }));
 
   // Middleware untuk inject prisma client ke setiap request
-  app.use((req, res, next) => {
-    req.prisma = prisma;
-    next();
-  });
+    app.use((req, res, next) => {
+        req.prisma = prisma;
+        next();
+    });
 
   // Rute API
-  app.get('/api', (req, res) => {
-    res.json({ message: 'Selamat datang di API BeeHealth! 🐝' });
-  });
+    app.get('/api', (req, res) => {
+        res.json({ message: 'Selamat datang di API BeeHealth! 🐝' });
+    });
 
   // Gunakan semua rute
-  app.use('/api/auth', authRoutes);
-  app.use('/api/user', userRoutes);
-  app.use('/api/food', foodRoutes);
-  app.use('/api/exercise', exerciseRoutes);
+    app.use('/api/auth', authRoutes);
+    app.use('/api/user', userRoutes);
+    app.use('/api/food', foodRoutes);
+    app.use('/api/exercise', exerciseRoutes);
 
-  return app;
+    return app;
 }

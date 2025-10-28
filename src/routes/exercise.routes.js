@@ -1,5 +1,3 @@
-// src/routes/exercise.routes.js
-
 import express from 'express';
 import * as exerciseController from '../controllers/exercise.controller.js';
 import { protect, isAdmin } from '../middleware/auth.middleware.js';

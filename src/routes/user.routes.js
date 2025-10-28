@@ -1,8 +1,5 @@
-// src/routes/user.routes.js
-
 import express from 'express';
 import * as userController from '../controllers/user.controller.js';
-// Gunakan named import untuk 'protect'
 import { protect } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
