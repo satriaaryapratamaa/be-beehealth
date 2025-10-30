@@ -26,6 +26,7 @@ export const register = async (req, res) => {
       userId: newUser.id,
     });
   } catch (error) {
+    console.error("!!! SERVER CRASH SAAT REGISTRASI:", error);
     res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });
   }
 };
