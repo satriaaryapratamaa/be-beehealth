@@ -1,8 +1,6 @@
 import * as UserModel from '../models/user.model.js';
 
-// --- Helper Functions (Logika Bisnis) ---
-// Biarkan fungsi kalkulasi ini di controller,
-// karena ini murni 'logika bisnis', bukan 'logika database'.
+
 function calculateBMR(gender, weight, height, age) {
     if (gender === 'MALE') {
         return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
