@@ -1,5 +1,3 @@
-// src/models/exercise.model.js
-
 import { prisma } from '../lib/prisma.js';
 
 // C = Create

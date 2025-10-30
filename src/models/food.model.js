@@ -1,6 +1,3 @@
-// src/models/food.model.js
-
-// Impor client prisma terpusat kita
 import { prisma } from '../lib/prisma.js';
 
 // C = Create
