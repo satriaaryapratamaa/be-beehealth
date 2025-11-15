@@ -24,8 +24,16 @@ export const calculateCalorie = async (req, res) => {
         return res.status(400).json({ message: "Semua data (gender, age, height, weight, goal) wajib diisi." });
     }
 
+    const ageNum = parseInt(age);
+    const heightNum = parseFloat(height);
+    const weightNum = parseFloat(weight);
+
+    if (isNaN(ageNum) || isNaN(heightNum) || isNaN(weightNum)) {
+        return res.status(400).json({ message: "Age, height, dan weight harus berupa angka." });
+    }
+
     try {
-        const bmr = calculateBMR(gender, weight, height, age);
+        const bmr = calculateBMR(gender, weightNum, heightNum, ageNum);
         const tdee = calculateTDEE(bmr);
 
         let targetCalories;
@@ -33,13 +41,20 @@ export const calculateCalorie = async (req, res) => {
         else if (goal === 'BULKING') targetCalories = tdee + 500;
         else targetCalories = tdee;
     
-        const targetProtein = 2 * weight;
-        const targetFat = 1 * weight;
+        const targetProtein = 2 * weightNum;
+        const targetFat = 1 * weightNum;
         const targetCarbs = (targetCalories - (targetProtein * 4) - (targetFat * 9)) / 4;
 
         const updateData = {
-            gender, age, height, weight, goal,
-            targetCalories, targetProtein, targetCarbs, targetFat
+            gender,
+            age: ageNum, // Kirim angka
+            height: heightNum, // Kirim angka
+            weight: weightNum, // Kirim angka
+            goal,
+            targetCalories, 
+            targetProtein, 
+            targetCarbs, 
+            targetFat
         };
     // 3. Panggil Model
         const updatedUser = await UserModel.updateUserCalculations(userId, updateData);
@@ -48,7 +63,7 @@ export const calculateCalorie = async (req, res) => {
         res.status(200).json({
             message: "Kalkulasi kalori berhasil disimpan!",
             data: {
-                targetCalories: updatedUser.targetCalories,
+            targetCalories: updatedUser.targetCalories,
             targetProtein: updatedUser.targetProtein,
             targetCarbs: updatedUser.targetCarbs,
             targetFat: updatedUser.targetFat,

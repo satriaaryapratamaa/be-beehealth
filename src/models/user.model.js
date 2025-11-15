@@ -1,8 +1,6 @@
 import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-
-
 export const findUserByEmail = (email) => {
   return prisma.user.findUnique({
     where: { email },

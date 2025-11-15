@@ -5,10 +5,16 @@ import userRoutes from './routes/user.routes.js';
 import foodRoutes from './routes/food.routes.js';
 import exerciseRoutes from './routes/exercise.routes.js';
 
+
 export function createApp(prisma) {
     const app = express();
 
-    app.use(cors());
+    app.use(cors({
+    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
 
@@ -18,10 +24,9 @@ export function createApp(prisma) {
     });
 
     app.get('/api', (req, res) => {
-        res.json({ message: 'Selamat datang di API BeeHealth! 🐝' });
+        res.json({ message: 'Selamat datang di API BeeHealth!' });
     });
 
-  // Gunakan semua rute
     app.use('/api/auth', authRoutes);
     app.use('/api/user', userRoutes);
     app.use('/api/food', foodRoutes);

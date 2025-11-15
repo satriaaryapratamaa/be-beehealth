@@ -1,9 +1,12 @@
 // server.js
 
 // Ganti cara import dotenv
+import express from 'express';
+import cors from 'cors';
 import 'dotenv/config'; 
 import { prisma } from './src/lib/prisma.js';
 import { createApp } from './src/app.js';
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -24,4 +27,6 @@ async function main() {
         process.exit(1);
     }
 }
+
+
 main();
