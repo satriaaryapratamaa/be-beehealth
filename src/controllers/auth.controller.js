@@ -21,10 +21,10 @@ export const register = async (req, res) => {
 };
 
 export const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
     try {
-        const user = await UserModel.findUserByEmail(email);
+        const user = await UserModel.findUserByEmailOrUsername(email,username);
 
         if (!user) {
         return res.status(401).json({ message: "Email atau password salah." });
@@ -34,11 +34,11 @@ export const login = async (req, res) => {
         if (!isPasswordValid) {
             return res.status(401).json({ message: "Email atau password salah." });
         }
-
+        
         const token = jwt.sign(
             { userId: user.id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '1m' }
         );
 
         res.status(200).json({
