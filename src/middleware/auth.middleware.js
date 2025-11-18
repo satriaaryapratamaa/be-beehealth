@@ -27,3 +27,4 @@ export const isAdmin = (req, res, next) => {
         res.status(403).json({ message: 'Akses ditolak. Rute ini hanya untuk Admin.' });
     }
 };
+
