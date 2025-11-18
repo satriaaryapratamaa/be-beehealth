@@ -10,7 +10,7 @@ export const create = async (data) => {
             carbs: parseFloat(data.carbs),
             fat: parseFloat(data.fat),
         },
-  });
+    });
 };
 
 // R = Read (All with Search)
