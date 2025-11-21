@@ -20,6 +20,7 @@ export const createFood = async (req, res) => {
 
 // R = Read (All)
 export const getAllFood = async (req, res) => {
+    const userId = req.user.userId;
     const { search } = req.query; 
 
     try {
@@ -30,6 +31,14 @@ export const getAllFood = async (req, res) => {
     }
 };
 
+export const showedFood = async (req, res) => {
+    try {
+    const foods = await FoodModel.findAll();
+    res.status(200).json({ data: foods.slice(0, 5) }); // Mengirim hanya 5 data pertama
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
 
 export const getFoodById = async (req, res) => {
     const { id } = req.params;

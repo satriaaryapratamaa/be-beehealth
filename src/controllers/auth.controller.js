@@ -24,21 +24,22 @@ export const login = async (req, res) => {
     const { email, username, password } = req.body;
 
     try {
-        const user = await UserModel.findUserByEmailOrUsername(email,username);
-
+        const user = await UserModel.findUserByEmailandUsername(email,username);
+        
         if (!user) {
-        return res.status(401).json({ message: "Email atau password salah." });
-        }
+            return res.status(401).json({ message: "Kredensial tidak valid." });
+        };
+
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
-            return res.status(401).json({ message: "Email atau password salah." });
-        }
+            return res.status(401).json({ message: "Kredensial tidak valid." });
+        };
         
         const token = jwt.sign(
             { userId: user.id, role: user.role },
             process.env.JWT_SECRET,
-            { expiresIn: '1m' }
+            { expiresIn: '720h' }
         );
 
         res.status(200).json({
@@ -47,6 +48,7 @@ export const login = async (req, res) => {
             userId: user.id,
             nama: user.nama,
             role: user.role,
+            username: user.username,
         });
     } catch (error) {
         res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });

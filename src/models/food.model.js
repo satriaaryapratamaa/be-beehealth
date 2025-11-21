@@ -18,8 +18,16 @@ export const findAll = async (searchTerm) => {
     let queryOptions = {
         orderBy: {
             nama: 'asc'
-        }
+        },
+        select: {
+            nama : true,
+            kalori : true,
+            protein : true,
+            carbs : true,
+            fat : true,
+        },
     };
+    
 
     if (searchTerm) {
         queryOptions.where = {
