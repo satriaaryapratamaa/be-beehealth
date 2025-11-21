@@ -1,12 +1,23 @@
 import { prisma } from '../lib/prisma.js';
 import bcrypt from 'bcryptjs';
 
-export const findUserByEmail = (email) => {
+export const findUserByUsername = (username) => {
+  return prisma.user.findUnique({
+    where: { username },
+  });
+};
+
+  export const findUserByEmail = (email) => {
   return prisma.user.findUnique({
     where: { email },
   });
 };
 
+export const findUserByEmailandUsername = (email, username) => {
+  return prisma.user.findFirst({
+    where: { AND: [{ email }, { username }] },
+  });
+};
 export const findUserByEmailOrUsername = (email, username) => {
   return prisma.user.findFirst({
     where: { OR: [{ email }, { username }] },
