@@ -1,6 +1,5 @@
 import * as FoodModel from '../models/food.model.js';
 
-// C = Create
 export const createFood = async (req, res) => {
     const { nama, kalori, protein, carbs, fat } = req.body;
     if (!nama || !kalori || !protein || !carbs || !fat) {
@@ -18,9 +17,8 @@ export const createFood = async (req, res) => {
     }
 };
 
-// R = Read (All)
 export const getAllFood = async (req, res) => {
-    const userId = req.user.userId;
+    const userId = req.user.userId; 
     const { search } = req.query; 
 
     try {
@@ -34,17 +32,17 @@ export const getAllFood = async (req, res) => {
 export const showedFood = async (req, res) => {
     try {
     const foods = await FoodModel.findAll();
-    res.status(200).json({ data: foods.slice(0, 5) }); // Mengirim hanya 5 data pertama
+    res.status(200).json({ data: foods.slice(0, 5) }); 
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
 export const getFoodById = async (req, res) => {
-    const { id } = req.params;
+    const { nama } = req.params;
 
     try {
-        const food = await FoodModel.findById(id);
+        const food = await FoodModel.findAll(nama);
         if (!food) {
             return res.status(404).json({ message: 'Makanan tidak ditemukan.' });
         }
@@ -54,7 +52,6 @@ export const getFoodById = async (req, res) => {
     }
 };
 
-// U = Update
 export const updateFood = async (req, res) => {
     const { id } = req.params;
 
@@ -72,12 +69,11 @@ export const updateFood = async (req, res) => {
     }
 };
 
-// D = Delete
 export const deleteFood = async (req, res) => {
-    const { id } = req.params;
+    const { nama } = req.params;
 
     try {
-        await FoodModel.remove(id);
+        await FoodModel.remove(nama);
         res.status(200).json({ message: 'Data makanan berhasil dihapus.' });
     } catch (error) {
         if (error.code === 'P2025') {
