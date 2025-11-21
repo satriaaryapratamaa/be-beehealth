@@ -20,6 +20,7 @@ export const findAll = async (searchTerm) => {
             nama: 'asc'
         },
         select: {
+            id : true,
             nama : true,
             kalori : true,
             protein : true,
@@ -61,9 +62,10 @@ export const update = async (id, data) => {
     });
 };
 
-// D = Delete
-export const remove = async (id) => {
+export const remove = async (nama) => {
     return prisma.food.delete({
-        where: { id: id },
+        where: { 
+            nama: nama
+        }
     });
 };
