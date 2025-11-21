@@ -13,29 +13,22 @@ export function createApp(prisma) {
         origin: ['http://localhost:5173', 'http://localhost:3000'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning']
+        allowedHeaders: [
+            'Content-Type',
+            'Authorization',
+            'ngrok-skip-browser-warning'
+        ]
     }));
-
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
-
-    // app.use((req, res, next) => {
-    //     req.prisma = prisma;
-    //     next();
-    // }); 
-    
     app.use((req, res, next) => {
         req.prisma = prisma;
-        res.header['Access-Control-Allow-Origin'] = '*';
-        res.header['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS';
-        res.header['Access-Control-Allow-Headers'] = 'Content-Type, Authorization';
-        next();     
+        next();
     });
 
     app.get('/api', (req, res) => {
         res.json({ message: 'Selamat datang di API BeeHealth!' });
     });
-
     app.use('/api/auth', authRoutes);
     app.use('/api/user', userRoutes);
     app.use('/api/food', foodRoutes);
