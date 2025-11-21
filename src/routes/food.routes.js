@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.post('/', protect, isAdmin, foodController.createFood);
 router.put('/:id', protect, isAdmin, foodController.updateFood);
-router.delete('/:id', protect, isAdmin, foodController.deleteFood);
+router.delete('/:nama', protect, isAdmin, foodController.deleteFood);
 
 router.get('/', protect, foodController.getAllFood);
 router.get('/:id', protect, foodController.getFoodById);
