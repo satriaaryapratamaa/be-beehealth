@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { prisma } from '../lib/prisma.js';
 
 export const create = (userId, deskripsi, imageURL) => {
     return prisma.post.create({
