@@ -2,7 +2,7 @@
 import { prisma } from '../lib/prisma.js';
 
 export const createFoodlog = (data) => {
-    return prisma.foodlog.create({
+    return prisma.foodLog.create({
         data: {
             userId: data.userId,
             foodId: data.foodId,
@@ -17,7 +17,7 @@ export const createFoodlog = (data) => {
 }
 
 export const createExerciselog = (data) => {
-    return prisma.exerciselog.create({
+    return prisma.exerciseLog.create({
         data: {
             userId: data.userId,
             exerciseId: data.exerciseId,
