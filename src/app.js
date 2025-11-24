@@ -4,6 +4,7 @@ import authRoutes from './routes/auth.routes.js';
 import userRoutes from './routes/user.routes.js';
 import foodRoutes from './routes/food.routes.js';
 import exerciseRoutes from './routes/exercise.routes.js';
+import logRoutes from './routes/log.routes.js';
 
 
 export function createApp(prisma) {
@@ -33,6 +34,7 @@ export function createApp(prisma) {
     app.use('/api/user', userRoutes);
     app.use('/api/food', foodRoutes);
     app.use('/api/exercise', exerciseRoutes);
+    app.use('/api/logs', logRoutes);
 
     return app;
 }
