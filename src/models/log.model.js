@@ -1,4 +1,4 @@
-import { mealType } from '@prisma/client';
+// import { mealType } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 export const createFoodlog = (data) => {
@@ -7,7 +7,7 @@ export const createFoodlog = (data) => {
             userId: data.userId,
             foodId: data.foodId,
             mealType: data.mealType,
-            porsi: data.porsi,
+            porsi: parseFloat(data.porsi),
             tanggal: new Date(),
         },
         include: {
@@ -42,14 +42,14 @@ export const upsertDailySummary = async (userId, date, kaloriMasuk, kaloriKeluar
             },
         },
         update: {
-            kaloriMasuk: {increment: kaloriMasuk},
-            kaloriKeluar: {increment: kaloriKeluar},
+            totalCaloriesIn: {increment: caloriesIn},
+            totalCaloriesOut: {increment: caloriesOut},
         },
         create: {
             userId: userId,
             date: startOfDay,
-            kaloriMasuk: kaloriMasuk,
-            kaloriKeluar: kaloriKeluar,
+            totalCaloriesIn: caloriesIn,
+            totalCaloriesOut: caloriesOut,
         },
     });
 }
@@ -66,7 +66,7 @@ export const getDailyLogs = async (userId, date) => {
             userId, tanggal: {
                 gte: startOfDay,
                 lte: endOfDay
-            },
+            }
         },
         include: { 
             food: true 
@@ -78,7 +78,7 @@ export const getDailyLogs = async (userId, date) => {
             userId, tanggal: {
                 gte: startOfDay,
                 lte: endOfDay
-            },
+            }
         },
         include: { 
             exercise: true 
@@ -89,7 +89,7 @@ export const getDailyLogs = async (userId, date) => {
         where: {
             userId_date: {
                 userId, date: startOfDay
-            },
+            }
         },
     });
 
