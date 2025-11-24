@@ -1,4 +1,4 @@
-import { MealType } from '@prisma/client';
+import { mealType } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 export const createFoodlog = (data) => {
@@ -6,9 +6,9 @@ export const createFoodlog = (data) => {
         data: {
             userId: data.userId,
             foodId: data.foodId,
-            MealType: data.MealType,
+            mealType: data.mealType,
             porsi: data.porsi,
-            date: data.date,
+            tanggal: new Date(),
         },
         include: {
             food: true,
@@ -96,6 +96,6 @@ export const getDailyLogs = async (userId, date) => {
     return {
         foodLogs,
         exerciseLogs,
-        dailySummary,
+        summary : dailySummary,
     };
 }
