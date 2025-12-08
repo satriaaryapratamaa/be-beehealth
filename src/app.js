@@ -5,6 +5,7 @@ import userRoutes from './routes/user.routes.js';
 import foodRoutes from './routes/food.routes.js';
 import exerciseRoutes from './routes/exercise.routes.js';
 import logRoutes from './routes/log.routes.js';
+import postRoutes from './routes/post.routes.js';
 
 
 export function createApp(prisma) {
@@ -27,6 +28,7 @@ export function createApp(prisma) {
         next();
     });
 
+    app.use('/uploads', express.static('uploads'));
     app.get('/api', (req, res) => {
         res.json({ message: 'Selamat datang di API BeeHealth!' });
     });
@@ -34,7 +36,8 @@ export function createApp(prisma) {
     app.use('/api/user', userRoutes);
     app.use('/api/food', foodRoutes);
     app.use('/api/exercise', exerciseRoutes);
-    app.use('/api/logs', logRoutes);
+    app.use('/api/log', logRoutes);
+    app.use('/api/post', postRoutes);
 
     return app;
 }

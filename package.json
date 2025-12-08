@@ -20,6 +20,7 @@
     "express": "^5.1.0",
     "fitness-calculator": "^1.1.1",
     "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
     "pg": "^8.16.3",
     "prisma": "^6.19.0",
     "studio": "^0.13.5"
