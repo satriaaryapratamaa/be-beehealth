@@ -6,6 +6,7 @@ import foodRoutes from './routes/food.routes.js';
 import exerciseRoutes from './routes/exercise.routes.js';
 import logRoutes from './routes/log.routes.js';
 import postRoutes from './routes/post.routes.js';
+import rekomendasiRoutes from './routes/rekomendasi.routes.js';
 
 
 export function createApp(prisma) {
@@ -38,6 +39,7 @@ export function createApp(prisma) {
     app.use('/api/exercise', exerciseRoutes);
     app.use('/api/log', logRoutes);
     app.use('/api/post', postRoutes);
+    app.use('api/rekomendasi', rekomendasiRoutes);
 
     return app;
 }
