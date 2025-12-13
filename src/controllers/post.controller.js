@@ -1,6 +1,6 @@
 import * as PostModel from '../models/post.model.js';
 import { prisma } from '../lib/prisma.js';
-import fs from 'fs';
+
 
 export const createPost = async (req, res) => {
     const userId = req.user.userId;
@@ -8,15 +8,20 @@ export const createPost = async (req, res) => {
 
     let imagePath = null;
 
-    if (req.file) {
-        imagePath = req.file.path.replace(/\\/g, '/');
+    if (req.file && req.file.path) {
+        imageUrl = req.file.path;
     }
 
+    // if (req.file) {
+    //     imagePath = req.file.filename;
+    // }
+
     if (!deskripsi) {
-        if (imagePath && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
-        }
         return res.status(400).json({ message: "Deskripsi wajib diisi." });
+        // if (imagePath && fs.existsSync(req.file.path)) {
+        //     fs.unlinkSync(req.file.path);
+        // }
+        // return res.status(400).json({ message: "Deskripsi wajib diisi." });
     }
 
     try {
