@@ -1,11 +1,11 @@
 import { prisma } from '../lib/prisma.js';
 
-export const create = (userId, deskripsi, imageURL) => {
+export const create = (userId, deskripsi, imageUrl) => {
     return prisma.post.create({
         data: { 
             userId: userId,
             deskripsi: deskripsi,
-            imageURL: imageURL || null,
+            imageUrl: imageUrl || null,
         },
     });
 }
@@ -23,18 +23,18 @@ export const findAll = () => {
                     nama: true,
                 },
             },
-        },
-        Comment: {
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        username: true,
+            comments: {
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            username: true,
+                        },
                     },
                 },
-            },
-            orderBy: {
-                date: 'desc',
+                orderBy: {
+                    date: 'desc',
+                },
             },
         },
     });

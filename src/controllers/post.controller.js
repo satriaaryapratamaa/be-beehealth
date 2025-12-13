@@ -51,7 +51,7 @@ export const deletePost = async (req, res) => {
             return res.status(403).json({ message: 'Anda tidak memiliki izin untuk menghapus post ini.' });
         }
         
-        if (post.imageURL) {
+        if (post.imageUrl) {
             if (fs.existsSync(post.imagePath)) {
                 fs.unlinkSync(post.imagePath);
                 console.log(`File berhasil dihapus: ${post.imagePath}`);

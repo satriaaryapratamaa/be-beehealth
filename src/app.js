@@ -39,7 +39,7 @@ export function createApp(prisma) {
     app.use('/api/exercise', exerciseRoutes);
     app.use('/api/log', logRoutes);
     app.use('/api/post', postRoutes);
-    app.use('api/rekomendasi', rekomendasiRoutes);
+    app.use('/api/rekomendasi', rekomendasiRoutes);
 
     return app;
 }
