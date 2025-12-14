@@ -10,8 +10,8 @@ export const create = (userId, deskripsi, imageUrl) => {
     });
 }
 
-export const findAll = () => {
-    return prisma.post.findMany({
+export const findAll = async (userId) => {
+    const posts= await prisma.post.findMany({
         orderBy: {
             sharedDate: 'desc',
         },
@@ -29,6 +29,7 @@ export const findAll = () => {
                         select: {
                             id: true,
                             username: true,
+                            nama: true,
                         },
                     },
                 },
@@ -36,8 +37,27 @@ export const findAll = () => {
                     date: 'desc',
                 },
             },
+            likes: {
+                select: {
+                    userId: true,
+                }
+            }
         },
     });
+
+    const result = posts.map(post => {
+        const { likes, ...rest } = post;
+
+        return {
+            ...rest,
+            liked: likes.some(like => like.userId === userId),
+            likesCount: likes.length,
+        }
+    });
+
+    return result;
+
+
 };
 
 export const remove = (id) => {

@@ -9,7 +9,7 @@ export const createPost = async (req, res) => {
     let imagePath = null;
 
     if (req.file && req.file.path) {
-        imageUrl = req.file.path;
+        imageUrl = req.file.path.replace(/\\/g, '/');
     }
 
     // if (req.file) {
@@ -34,7 +34,8 @@ export const createPost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
     try {
-        const posts = await PostModel.findAll();
+        const userId = req.user.userId;
+        const posts = await PostModel.findAll(userId);
         res.status(200).json({ data: posts });
     } catch (error) {
         res.status(500).json({ message: 'Gagal mengambil posts', error: error.message });
@@ -57,9 +58,9 @@ export const deletePost = async (req, res) => {
         }
         
         if (post.imageUrl) {
-            if (fs.existsSync(post.imagePath)) {
-                fs.unlinkSync(post.imagePath);
-                console.log(`File berhasil dihapus: ${post.imagePath}`);
+            if (fs.existsSync(post.imageUrl)) {
+                fs.unlinkSync(post.imageUrl);
+                console.log(`File berhasil dihapus: ${post.imageUrl}`);
             }
         }
 
