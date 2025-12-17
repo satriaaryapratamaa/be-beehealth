@@ -30,7 +30,7 @@ export const createExerciselog = (data) => {
     });
 }
 
-export const upsertDailySummary = async (userId, date, kaloriMasuk, kaloriKeluar) => {
+export const upsertDailySummary = async (userId, date, caloriesIn, caloriesOut) => {
     const startOfDay = new Date(date);
     startOfDay.setHours(0, 0, 0, 0);
 
@@ -61,7 +61,7 @@ export const getDailyLogs = async (userId, date) => {
     const endOfDay = new Date(date);
     endOfDay.setHours(23, 59, 59, 999);
 
-    const foodLogs = await prisma.foodlog.findMany({
+    const foodLogs = await prisma.foodLog.findMany({
         where: {
             userId, tanggal: {
                 gte: startOfDay,
@@ -73,7 +73,7 @@ export const getDailyLogs = async (userId, date) => {
         },
     });
 
-    const exerciseLogs = await prisma.exerciselog.findMany({
+    const exerciseLogs = await prisma.exerciseLog.findMany({
         where: {
             userId, tanggal: {
                 gte: startOfDay,

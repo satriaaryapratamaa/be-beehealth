@@ -5,7 +5,7 @@ import * as ExerciseModel from './exercise.model.js';
 
 export const getRequiredRecommendationData = async (userId,date) => {
 
-    const userProfile = await UserModel.getUserByID(userId);
+    const userProfile = await UserModel.findUserByEmail(userId);
     const { summary } = await LogModel.getDailyLogs(userId, date);
 
     const allFoods = await FoodModel.getAllFoods();
