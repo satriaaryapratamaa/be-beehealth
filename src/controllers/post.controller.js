@@ -26,7 +26,7 @@ export const createPost = async (req, res) => {
     }
 
     try {
-        const post = await PostModel.create(userId, deskripsi, imagePath);
+        const post = await PostModel.create(userId, deskripsi, imageUrl);
         res.status(201).json({ message: 'Post berhasil dibuat', data: post });
     } catch (error) {
         res.status(500).json({ message: 'Gagal membuat post', error: error.message });
