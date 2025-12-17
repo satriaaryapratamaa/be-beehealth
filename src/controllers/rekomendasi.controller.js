@@ -5,8 +5,9 @@ const MAX_RECOMMENDATIONS = 3;
 const DEFAULT_EXERCISE_DURATION = 30;
 
 export const getRecommendation = async (req, res) => {
-    const userId = req.params.userId;
+    // const userId = req.params.userId;
     const today = new Date();
+    const userId = req.user?.userId;
 
     try {
         const { userProfile, dailySummary, allFoods, allExercises } = await RekomendasiModel.getRequiredRecommendationData(userId, today);

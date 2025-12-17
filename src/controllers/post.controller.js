@@ -1,12 +1,13 @@
 import * as PostModel from '../models/post.model.js';
 import { prisma } from '../lib/prisma.js';
+import fs from 'fs';
 
 
 export const createPost = async (req, res) => {
     const userId = req.user.userId;
     const { deskripsi} = req.body;
 
-    let imagePath = null;
+    let imageUrl = null;
 
     if (req.file && req.file.path) {
         imageUrl = req.file.path.replace(/\\/g, '/');

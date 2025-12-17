@@ -50,7 +50,7 @@ export const getDailyLogs = async (req, res) => {
 
         res.status(200).json({ 
             data: dateParam.toISOString().split('T')[0],
-            summary: summary,
+            summary: dailySummary || { totalCaloriesIn: 0, totalCaloriesOut: 0, netCalories: 0 },
             foodLogs,
             exerciseLogs
     });
