@@ -37,32 +37,55 @@ export const logFood = async (req, res) => {
 
 export const logExercise = async (req, res) => {
     const userId = req.user?.userId;
-    const { exerciseId } = req.body;
-    const durationInMinute = parseInt(req.body.durationInMinute);
-
+    
+    // Terima input (bisa exerciseId atau namaKegiatan)
+    let { exerciseId, namaKegiatan, durationInMinute } = req.body;
+    
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    if (!exerciseId || !durationInMinute) {
-        return res.status(400).json({ message: "ExerciseId dan durationInMinute wajib diisi." });
+    // Validasi input
+    if ((!exerciseId && !namaKegiatan) || !durationInMinute) {
+        return res.status(400).json({ message: "Nama Kegiatan/ID dan durasi wajib diisi." });
     }
 
     try {
-        const exerciseData = await prisma.exercise.findUnique({
-            where: { id: exerciseId }
-        });
+        let exerciseData = null;
 
-        if (!exerciseData) {
-            return res.status(404).json({ message: `Olahraga dengan ID ${exerciseId} tidak ditemukan.`});
+        // 1. Cari Data Olahraga
+        if (exerciseId) {
+            // Jika user kirim ID
+            exerciseData = await prisma.exercise.findUnique({ where: { id: exerciseId } });
+        } else if (namaKegiatan) {
+            // Jika user kirim Nama (Contoh: "Basket")
+            exerciseData = await prisma.exercise.findFirst({
+                where: {
+                    namaKegiatan: {
+                        equals: namaKegiatan,
+                        mode: 'insensitive' // Supaya "basket" terbaca sama dengan "Basket"
+                    }
+                }
+            });
         }
 
-        const log = await LogModel.createExerciselog({ userId, exerciseId, durationInMinute });
+        if (!exerciseData) {
+            return res.status(404).json({ message: `Olahraga '${namaKegiatan || exerciseId}' tidak ditemukan.` });
+        }
 
-        // const caloriesOut = log.exerciseId.kaloriTerbakarPerMenit * durationInMinute;
-        const caloriesOut = exerciseData.caloriesBurnPerMinute * durationInMinute;
+        // 2. Simpan Log (Panggil Model yang baru diperbaiki)
+        const log = await LogModel.createExerciselog({ 
+            userId, 
+            exerciseId: exerciseData.id, // Pakai ID asli dari database
+            durationInMinute: durationInMinute // Kirim durasi (tanpa s) ke model
+        });
+
+        // 3. Update Summary Harian
+        const caloriesOut = exerciseData.caloriesBurnPerMinute * parseInt(durationInMinute);
         await LogModel.upsertDailySummary(userId, log.tanggal, 0, caloriesOut);
     
         res.status(200).json({ message: 'Log olahraga berhasil ditambahkan', data: log });
+
     } catch (error) {
+        console.error(error); // Cek terminal backend jika error lagi
         res.status(500).json({ message: 'Gagal mencatat olahraga', error: error.message });
     }
 };

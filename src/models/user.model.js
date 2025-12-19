@@ -78,3 +78,35 @@ export const updateUserCalculations = (id, data) => {
     },
   });
 };
+
+export const saveResetToken = (email, token, expiry) => {
+  return prisma.user.update({
+    where: { email: email },
+    data: {
+      resetToken: token,
+      resetTokenExpiry: expiry,
+    },
+  });
+};
+
+export const findUserByValidToken = (token) => {
+  return prisma.user.findFirst({
+    where: {
+      resetToken: token,
+      resetTokenExpiry: {
+        gt: new Date(), // gt = greater than (waktu expiry harus lebih besar dari sekarang)
+      },
+    },
+  });
+};
+
+export const updatePasswordReset = (userId, hashedPassword) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+      resetToken: null,      // Hapus token agar tidak bisa dipakai lagi
+      resetTokenExpiry: null, // Hapus waktu expiry
+    },
+  });
+};

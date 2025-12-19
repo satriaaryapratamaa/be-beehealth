@@ -21,7 +21,9 @@ export const createExerciselog = (data) => {
         data: {
             userId: data.userId,
             exerciseId: data.exerciseId,
-            durationInMinute: parseInt(data.durationInMinute),
+        
+            durationInMinutes: parseInt(data.durationInMinute), 
+
             tanggal: new Date(),
         },
         include: {
