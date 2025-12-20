@@ -1,4 +1,5 @@
 import * as LogModel from '../models/log.model.js';
+import * as UserModel from '../models/user.model.js';
 import { prisma } from '../lib/prisma.js';
 
 export const logFood = async (req, res) => {
@@ -38,12 +39,10 @@ export const logFood = async (req, res) => {
 export const logExercise = async (req, res) => {
     const userId = req.user?.userId;
     
-    // Terima input (bisa exerciseId atau namaKegiatan)
     let { exerciseId, namaKegiatan, durationInMinute } = req.body;
     
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-    // Validasi input
     if ((!exerciseId && !namaKegiatan) || !durationInMinute) {
         return res.status(400).json({ message: "Nama Kegiatan/ID dan durasi wajib diisi." });
     }
@@ -71,14 +70,12 @@ export const logExercise = async (req, res) => {
             return res.status(404).json({ message: `Olahraga '${namaKegiatan || exerciseId}' tidak ditemukan.` });
         }
 
-        // 2. Simpan Log (Panggil Model yang baru diperbaiki)
         const log = await LogModel.createExerciselog({ 
             userId, 
             exerciseId: exerciseData.id, // Pakai ID asli dari database
             durationInMinute: durationInMinute // Kirim durasi (tanpa s) ke model
         });
 
-        // 3. Update Summary Harian
         const caloriesOut = exerciseData.caloriesBurnPerMinute * parseInt(durationInMinute);
         await LogModel.upsertDailySummary(userId, log.tanggal, 0, caloriesOut);
     
@@ -105,5 +102,27 @@ export const getDailyLogs = async (req, res) => {
     });
     } catch (error) {
         res.status(500).json({ message: 'Gagal mengambil log harian', error: error.message });
+    }
+};
+
+const calculateNewStreak = (currentStreak, lastLogDate, logDateInput) => {
+    const today = new Date(logDateInput);
+    today.setHours(0, 0, 0, 0);
+
+    let lastLog = lastLogDate ? new Date(lastLogDate) : null;
+    if (lastLog) lastLog.setHours(0, 0, 0, 0);
+
+    if (!lastLog) return 1; 
+    
+    if (today.getTime() === lastLog.getTime()) return currentStreak;
+
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+
+    if (lastLog.getTime() === yesterday.getTime()) {
+        return currentStreak + 1; 
+    } else {
+        return 1;
     }
 };

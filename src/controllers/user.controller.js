@@ -47,19 +47,18 @@ export const calculateCalorie = async (req, res) => {
 
         const updateData = {
             gender,
-            age: ageNum, // Kirim angka
-            height: heightNum, // Kirim angka
-            weight: weightNum, // Kirim angka
+            age: ageNum, 
+            height: heightNum, 
+            weight: weightNum, 
             goal,
             targetCalories, 
             targetProtein, 
             targetCarbs, 
             targetFat
         };
-    // 3. Panggil Model
+
         const updatedUser = await UserModel.updateUserCalculations(userId, updateData);
 
-    // 4. Kirim Respons
         res.status(200).json({
             message: "Kalkulasi kalori berhasil disimpan!",
             data: {
@@ -79,16 +78,38 @@ export const getUserProfile = async (req, res) => {
     const userId = req.user.userId;
 
     try {
-    // 1. Panggil Model
         const user = await UserModel.findUserById(userId);
 
         if (!user) {
         return res.status(404).json({ message: "User tidak ditemukan." });
         }
     
-    // 2. Kirim Respons
         res.status(200).json({ data: user });
     } catch (error) {
         res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });
+    }
+};
+
+export const getUserStats = async (req, res) => {
+    const userId = req.user.userId;
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { streak: true, lastLogDate: true, username: true } // Ambil yang perlu aja
+        });
+
+        const today = new Date().toISOString().split('T')[0];
+        const lastLog = user.lastLogDate ? user.lastLogDate.toISOString().split('T')[0] : null;
+    
+        const isStreakActive = (lastLog === today);
+
+        res.json({
+            streak: user.streak,
+            isStreakActive: isStreakActive,
+            username: user.username
+        });
+    } catch (error) {
+    res.status(500).json({ message: "Error fetch stats" });
     }
 };

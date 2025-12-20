@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post('/calculate', protect, userController.calculateCalorie);
 router.get('/profile', protect, userController.getUserProfile);
+router.get('/stats', protect, userController.getUserStats);
 
 
 export default router;

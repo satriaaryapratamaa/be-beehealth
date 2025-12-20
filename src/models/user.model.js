@@ -25,7 +25,6 @@ export const findUserByEmailOrUsername = (email, username) => {
 };
 
 export const createUser = async (data) => {
-  // Pindahkan hashing password ke dalam model
   const hashedPassword = await bcrypt.hash(data.password, 12);
 
   return prisma.user.create({
@@ -94,7 +93,7 @@ export const findUserByValidToken = (token) => {
     where: {
       resetToken: token,
       resetTokenExpiry: {
-        gt: new Date(), // gt = greater than (waktu expiry harus lebih besar dari sekarang)
+        gt: new Date(), 
       },
     },
   });
@@ -105,8 +104,25 @@ export const updatePasswordReset = (userId, hashedPassword) => {
     where: { id: userId },
     data: {
       password: hashedPassword,
-      resetToken: null,      // Hapus token agar tidak bisa dipakai lagi
-      resetTokenExpiry: null, // Hapus waktu expiry
+      resetToken: null,      
+      resetTokenExpiry: null, 
     },
+  });
+};
+
+export const findUserForStreak = (userId) => {
+  return prisma.user.findUnique({
+    where: { id: userId },
+    select: { streak: true, lastLogDate: true }
+  });
+};
+
+export const updateUserStreakData = (userId, newStreak, newLogDate) => {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      streak: newStreak,
+      lastLogDate: newLogDate
+    }
   });
 };
