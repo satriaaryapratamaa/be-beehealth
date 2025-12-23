@@ -101,3 +101,17 @@ export const getDailyLogs = async (userId, date) => {
         summary : dailySummary,
     };
 }
+
+export const deleteFoodLogById = (id) => {
+    return prisma.foodLog.delete({
+        where: { id: id },
+        include: { food: true } 
+    });
+};
+
+export const deleteExerciseLogById = (id) => {
+    return prisma.exerciseLog.delete({
+        where: { id: id },
+        include: { exercise: true } 
+    });
+};

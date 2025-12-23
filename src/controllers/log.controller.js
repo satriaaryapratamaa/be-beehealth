@@ -2,6 +2,11 @@ import * as LogModel from '../models/log.model.js';
 import * as UserModel from '../models/user.model.js';
 import { prisma } from '../lib/prisma.js';
 
+const getJakartaDateString = (dateInput) => {
+    const d = dateInput ? new Date(dateInput) : new Date();
+    return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+};
+
 export const logFood = async (req, res) => {
     const userId = req.user.userId;
     // const { foodId, mealType, porsi} = req.body;
@@ -50,17 +55,15 @@ export const logExercise = async (req, res) => {
     try {
         let exerciseData = null;
 
-        // 1. Cari Data Olahraga
         if (exerciseId) {
-            // Jika user kirim ID
             exerciseData = await prisma.exercise.findUnique({ where: { id: exerciseId } });
         } else if (namaKegiatan) {
-            // Jika user kirim Nama (Contoh: "Basket")
+
             exerciseData = await prisma.exercise.findFirst({
                 where: {
                     namaKegiatan: {
                         equals: namaKegiatan,
-                        mode: 'insensitive' // Supaya "basket" terbaca sama dengan "Basket"
+                        mode: 'insensitive' 
                     }
                 }
             });
@@ -72,8 +75,8 @@ export const logExercise = async (req, res) => {
 
         const log = await LogModel.createExerciselog({ 
             userId, 
-            exerciseId: exerciseData.id, // Pakai ID asli dari database
-            durationInMinute: durationInMinute // Kirim durasi (tanpa s) ke model
+            exerciseId: exerciseData.id, 
+            durationInMinute: durationInMinute 
         });
 
         const caloriesOut = exerciseData.caloriesBurnPerMinute * parseInt(durationInMinute);
@@ -93,36 +96,89 @@ export const getDailyLogs = async (req, res) => {
 
     try {
         const { foodLogs, exerciseLogs, summary : dailySummary } = await LogModel.getDailyLogs(userId, dateParam);
+        const dateResponse = getJakartaDateString(dateParam); 
 
         res.status(200).json({ 
-            data: dateParam.toISOString().split('T')[0],
+            data: dateResponse, 
             summary: dailySummary || { totalCaloriesIn: 0, totalCaloriesOut: 0, netCalories: 0 },
             foodLogs,
             exerciseLogs
-    });
+        });
     } catch (error) {
         res.status(500).json({ message: 'Gagal mengambil log harian', error: error.message });
     }
 };
 
-const calculateNewStreak = (currentStreak, lastLogDate, logDateInput) => {
-    const today = new Date(logDateInput);
-    today.setHours(0, 0, 0, 0);
+const calculateNewStreak = (currentStreak, lastLogDate, todayDateInput) => {
+    const todayStr = getJakartaDateString(todayDateInput);
+    const lastLogStr = lastLogDate ? getJakartaDateString(lastLogDate) : null;
 
-    let lastLog = lastLogDate ? new Date(lastLogDate) : null;
-    if (lastLog) lastLog.setHours(0, 0, 0, 0);
+    if (!lastLogStr) return 1;
+    if (todayStr === lastLogStr) return currentStreak;
 
-    if (!lastLog) return 1; 
+    const todayDateObj = new Date(todayStr);
+    const lastLogDateObj = new Date(lastLogStr);
     
-    if (today.getTime() === lastLog.getTime()) return currentStreak;
+    const diffTime = Math.abs(todayDateObj - lastLogDateObj);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0);
-
-    if (lastLog.getTime() === yesterday.getTime()) {
-        return currentStreak + 1; 
+    if (diffDays === 1) {
+        return currentStreak + 1;
     } else {
         return 1;
+    }
+};
+
+export const deleteFoodLog = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const checkLog = await prisma.foodLog.findUnique({
+            where: { id: id }
+        });
+
+        if (!checkLog || checkLog.userId !== userId) {
+            return res.status(404).json({ message: "Log tidak ditemukan atau bukan milik Anda." });
+        }
+
+        const deletedLog = await LogModel.deleteFoodLogById(id);
+
+        const caloriesToSubtract = deletedLog.food.kalori * deletedLog.porsi;
+
+        await LogModel.upsertDailySummary(userId, deletedLog.tanggal, -caloriesToSubtract, 0);
+
+        res.status(200).json({ message: "Berhasil menghapus makanan" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Gagal menghapus log", error: error.message });
+    }
+};
+
+export const deleteExerciseLog = async (req, res) => {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    try {
+        const checkLog = await prisma.exerciseLog.findUnique({
+            where: { id: id }
+        });
+
+        if (!checkLog || checkLog.userId !== userId) {
+            return res.status(404).json({ message: "Log tidak ditemukan." });
+        }
+
+        const deletedLog = await LogModel.deleteExerciseLogById(id);
+
+        const caloriesToSubtract = deletedLog.exercise.caloriesBurnPerMinute * deletedLog.durationInMinute;
+
+        await LogModel.upsertDailySummary(userId, deletedLog.tanggal, 0, -caloriesToSubtract);
+
+        res.status(200).json({ message: "Berhasil menghapus olahraga" });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Gagal menghapus log", error: error.message });
     }
 };

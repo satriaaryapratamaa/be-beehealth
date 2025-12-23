@@ -8,4 +8,7 @@ router.post('/food', protect, logController.logFood);
 router.post('/exercise', protect, logController.logExercise);
 router.get('/daily', protect, logController.getDailyLogs);
 
+router.delete('/food/:id', protect, logController.deleteFoodLog);
+router.delete('/exercise/:id', protect, logController.deleteExerciseLog);
+
 export default router;

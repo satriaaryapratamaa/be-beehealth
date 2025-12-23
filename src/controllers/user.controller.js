@@ -15,6 +15,9 @@ function calculateTDEE(bmr) {
     return bmr * activityLevel;
 }
 
+const getJakartaDate = () => {
+    return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
+};
 
 export const calculateCalorie = async (req, res) => {
     const userId = req.user.userId;
