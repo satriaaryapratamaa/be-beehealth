@@ -90,26 +90,77 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-export const getUserStats = async (req, res) => {
-    const userId = req.user.userId;
+// export const getUserStats = async (req, res) => {
+//     const userId = req.user.userId;
 
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: { streak: true, lastLogDate: true, username: true } // Ambil yang perlu aja
-        });
+//     try {
+//         const user = await prisma.user.findUnique({
+//             where: { id: userId },
+//             select: { streak: true, lastLogDate: true, username: true } // Ambil yang perlu aja
+//         });
 
-        const today = new Date().toISOString().split('T')[0];
-        const lastLog = user.lastLogDate ? user.lastLogDate.toISOString().split('T')[0] : null;
+//         const today = new Date().toISOString().split('T')[0];
+//         const lastLog = user.lastLogDate ? user.lastLogDate.toISOString().split('T')[0] : null;
     
-        const isStreakActive = (lastLog === today);
+//         const isStreakActive = (lastLog === today);
 
-        res.json({
-            streak: user.streak,
-            isStreakActive: isStreakActive,
-            username: user.username
-        });
+//         res.json({
+//             streak: user.streak,
+//             isStreakActive: isStreakActive,
+//             username: user.username
+//         });
+//     } catch (error) {
+//     res.status(500).json({ message: "Error fetch stats" });
+//     }
+// };
+
+export const getUserStats = async (req, res) => {
+    
+    try {
+        let userId = null;
+    
+        if (req.params && req.params.id && req.params.id !== 'undefined' && req.params.id !== 'null') {
+            userId = req.params.id;
+        } else if ( req.user && req.user.userId) {
+            userId = req.user.userId;
+        }
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID tidak ditemukan." });
+        }
+
+        const user = await UserModel.findUserForStreak(userId);
+
+        if (!user) {
+            return res.status(404).json({ message: "User tidak ditemukan." });
+        }
+
+        let isStreakActive = false;
+
+        if (user.lastLogDate) {
+            // const today = new Date();
+            // const lastLog = new Date(user.lastLogDate);
+
+            // isStreakActive = today.getDay() === lastLog.getDay() && 
+            // today.getMonth() === lastLog.getMonth() &&
+            // today.getFullYear === lastLog.getFullYear();
+            const serverDateWIB = new Date().toLocaleDateString('en-CA', {timeZone: 'Asia/Jakarta'});
+            const lastLogDateWIB = new Date(user.lastLogDate).toLocaleDateString('en-CA', {timeZone
+                : 'Asia/Jakarta'});
+
+            isStreakActive = serverDateWIB === lastLogDateWIB;
+        }
+        const currentLoggedInId = req.user ? req.user.userId : null;
+        const isMe = currentLoggedInId === userId;
+        const finalActiveStatus = isMe ? isStreakActive : (user.streak > 0);
+
+        res.status(200).json({
+            streak: user.streak || 1,
+            isStreakActive: finalActiveStatus,
+            username: user.username,
+        })
     } catch (error) {
-    res.status(500).json({ message: "Error fetch stats" });
+        console.error("Error fetching user stats:", error);
+        res.status(500).json({ message: "Gagal mengambil data streak.", error: error.message });
     }
-};
+}

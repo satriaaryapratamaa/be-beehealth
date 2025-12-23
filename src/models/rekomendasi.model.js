@@ -8,7 +8,7 @@ export const getRequiredRecommendationData = async (userId,date) => {
     const userProfile = await UserModel.findUserByEmail(userId);
     const { summary } = await LogModel.getDailyLogs(userId, date);
 
-    const allFoods = await FoodModel.getAllFoods();
+    // const allFoods = await FoodModel.getAllFoods();
     const allExercises = await ExerciseModel.getAllExercises();
 
     return {

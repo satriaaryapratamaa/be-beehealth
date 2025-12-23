@@ -67,7 +67,7 @@ export const forgotPassword = async (req, res) => {
         }
 
         const resetToken = crypto.randomBytes(32).toString('hex');
-        const resetTokenExpiry = Date.now() + 3600000; // 1 jam
+        const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 jam
 
         await UserModel.saveResetToken(email, resetToken, resetTokenExpiry);
 
@@ -101,6 +101,10 @@ export const forgotPassword = async (req, res) => {
 export const resetPassword = async (req, res) => {
     try {
         const { token, newPassword } = req.body;
+
+        if (!token || !newPassword) {
+            return res.status(400).json({message: "Token dan password baru wajib diisi."});
+        }
 
         const user = await UserModel.findUserByValidToken(token);
 

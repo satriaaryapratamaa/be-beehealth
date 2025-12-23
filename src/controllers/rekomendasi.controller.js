@@ -5,14 +5,14 @@ const MAX_RECOMMENDATIONS = 3;
 const DEFAULT_EXERCISE_DURATION = 30;
 
 export const getRecommendation = async (req, res) => {
-    // const userId = req.params.userId;
+    
     const today = new Date();
     const userId = req.user?.userId;
 
     try {
         const { userProfile, dailySummary, allFoods, allExercises } = await RekomendasiModel.getRequiredRecommendationData(userId, today);
 
-        if (!userProfile || !userProfile.targetCalorie) {
+        if (!userProfile || !userProfile.targetCalories) {
             return res.status(400).json({ message: 'Lengkapi kalkulasi kalori Anda (target, berat, tinggi, dll.) terlebih dahulu.' });
         }
 
@@ -20,7 +20,7 @@ export const getRecommendation = async (req, res) => {
         const totalCaloriesOut = dailySummary ? dailySummary.caloriesOut : 0;
 
         const netCalories = totalCaloriesIn - totalCaloriesOut;
-        const remainingCalories = userProfile.targetCalorie - netCalories;
+        const remainingCalories = userProfile.targetCalories - netCalories;
 
         let foodRecommendations = [];
         let exerciseRecommendations = [];
@@ -47,7 +47,7 @@ export const getRecommendation = async (req, res) => {
 
         res.status(200).json({
             summary : {
-                target: userProfile.targetCalorie,
+                target: userProfile.targetCalories,
                 currentNet: netCalories,
                 remaining: remainingCalories,
                 status: status,
