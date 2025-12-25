@@ -11,7 +11,7 @@ export const logFood = async (req, res) => {
     const userId = req.user.userId;
     // const { foodId, mealType, porsi} = req.body;
     // const foodNama = parseFloat(req.body.foodNama);
-    const { foodNama, mealType} = req.body;
+    const { foodNama, mealType, tanggal} = req.body;
     const porsi = parseFloat(req.body.porsi);
     // const foodNama = req.body.foodNama;
     // const porsi = parseFloat(req.body.porsi);
@@ -28,7 +28,10 @@ export const logFood = async (req, res) => {
         if (!foodData) {
             return res.status(404).json({ message: `Makanan dengan ID ${foodNama} tidak ditemukan. `});
         }
-        const log = await LogModel.createFoodlog({ userId,foodId: foodData.id, foodNama, mealType, porsi });
+
+        const logDate = tanggal ? new Date(tanggal) : new Date();
+
+        const log = await LogModel.createFoodlog({ userId,foodId: foodData.id, foodNama, mealType, porsi, tanggal: logDate });
 
         // const caloriesIn = log.food.kalori * log.porsi;
         const caloriesIn = foodData.kalori * porsi;
@@ -44,7 +47,7 @@ export const logFood = async (req, res) => {
 export const logExercise = async (req, res) => {
     const userId = req.user?.userId;
     
-    let { exerciseId, namaKegiatan, durationInMinute } = req.body;
+    let { exerciseId, namaKegiatan, durationInMinute, tanggal } = req.body;
     
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
@@ -73,14 +76,17 @@ export const logExercise = async (req, res) => {
             return res.status(404).json({ message: `Olahraga '${namaKegiatan || exerciseId}' tidak ditemukan.` });
         }
 
+        const logDate = tanggal ? new Date(tanggal) : new Date();
+
         const log = await LogModel.createExerciselog({ 
             userId, 
             exerciseId: exerciseData.id, 
-            durationInMinute: durationInMinute 
+            durationInMinute: durationInMinute,
+            tanggal: logDate 
         });
 
         const caloriesOut = exerciseData.caloriesBurnPerMinute * parseInt(durationInMinute);
-        await LogModel.upsertDailySummary(userId, log.tanggal, 0, caloriesOut);
+        await LogModel.upsertDailySummary(userId, logDate, 0, caloriesOut);
     
         res.status(200).json({ message: 'Log olahraga berhasil ditambahkan', data: log });
 

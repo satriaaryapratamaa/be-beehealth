@@ -8,7 +8,7 @@ export const createFoodlog = (data) => {
             foodId: data.foodId,
             mealType: data.mealType,
             porsi: parseFloat(data.porsi),
-            tanggal: new Date(),
+            tanggal: tanggal,
         },
         include: {
             food: true,
