@@ -1,20 +1,18 @@
 import * as UserModel from './user.model.js';
 import * as LogModel from './log.model.js';
-import * as FoodModel from './food.model.js';
-import * as ExerciseModel from './exercise.model.js';
+import { prisma } from '../lib/prisma.js'; 
 
-export const getRequiredRecommendationData = async (userId,date) => {
-
-    const userProfile = await UserModel.findUserByEmail(userId);
-    const { summary } = await LogModel.getDailyLogs(userId, date);
-
-    // const allFoods = await FoodModel.getAllFoods();
-    const allExercises = await ExerciseModel.getAllExercises();
+export const getRequiredRecommendationData = async (userId, date) => {
+    const userProfile = await UserModel.findUserById(userId);
+    
+    const logsData = await LogModel.getDailyLogs(userId, date);
+    const allFoods = await prisma.food.findMany(); 
+    const allExercises = await prisma.exercise.findMany();
 
     return {
         userProfile,
-        dailySummary : summary,
+        dailyLogs: logsData, // Kita butuh foodLogs & exerciseLogs mentah
         allFoods,
         allExercises,
     };
-}
+};

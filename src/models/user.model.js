@@ -58,6 +58,8 @@ export const findUserById = (id) => {
       targetProtein: true,
       targetCarbs: true,
       targetFat: true,
+      streak: true,       
+      lastLogDate: true   
     },
   });
 };
@@ -110,19 +112,53 @@ export const updatePasswordReset = (userId, hashedPassword) => {
   });
 };
 
-export const findUserForStreak = (userId) => {
-  return prisma.user.findUnique({
-    where: { id: userId },
-    select: { streak: true, lastLogDate: true }
-  });
-};
+export const updateUserStreak = async (userId, logDateInput) => {
+    const inputDate = new Date(logDateInput);
+    inputDate.setHours(0, 0, 0, 0);
 
-export const updateUserStreakData = (userId, newStreak, newLogDate) => {
-  return prisma.user.update({
-    where: { id: userId },
-    data: {
-      streak: newStreak,
-      lastLogDate: newLogDate
+    const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { streak: true, lastLogDate: true }
+    });
+
+    if (!user) return;
+
+    let newStreak = user.streak;
+    let shouldUpdate = false;
+    let newLastLogDate = inputDate;
+
+    // 3. LOGIC UTAMA
+    if (user.lastLogDate) {
+        const lastLog = new Date(user.lastLogDate);
+        lastLog.setHours(0, 0, 0, 0);
+
+        if (inputDate.getTime() <= lastLog.getTime()) {
+            return; 
+        }
+
+        const diffTime = Math.abs(inputDate - lastLog);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+            newStreak += 1;
+            shouldUpdate = true;
+        } else {
+            newStreak = 1;
+            shouldUpdate = true;
+        }
+
+    } else {
+        newStreak = 1;
+        shouldUpdate = true;
     }
-  });
+
+    if (shouldUpdate) {
+        await prisma.user.update({
+            where: { id: userId },
+            data: {
+                streak: newStreak,
+                lastLogDate: inputDate 
+            }
+        });
+    }
 };

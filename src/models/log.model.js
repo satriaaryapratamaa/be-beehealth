@@ -1,4 +1,3 @@
-// import { mealType } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 
 export const createFoodlog = (data) => {
@@ -8,7 +7,7 @@ export const createFoodlog = (data) => {
             foodId: data.foodId,
             mealType: data.mealType,
             porsi: parseFloat(data.porsi),
-            tanggal: new Date(),
+            tanggal: data.tanggal || new Date(),
         },
         include: {
             food: true,
@@ -58,10 +57,10 @@ export const upsertDailySummary = async (userId, date, caloriesIn, caloriesOut) 
 
 export const getDailyLogs = async (userId, date) => {
     const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
     const foodLogs = await prisma.foodLog.findMany({
         where: {

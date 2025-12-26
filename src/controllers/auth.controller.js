@@ -75,32 +75,44 @@ export const forgotPassword = async (req, res) => {
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
-            // host : 'smtp.gmail.com',
-            // port : 587,
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,
             },
         });
 
-        const resetLink = `http://localhost:3000/reset-password?token=${resetToken}&email=${email}`;
+        // --- PERBAIKAN DI SINI ---
+        // 1. Ganti port ke 5173 (Frontend React)
+        // 2. Ganti format jadi slash (/) agar rapi dan ditangkap React Router
+        const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
 
         await transporter.sendMail({
             from: '"BeeHealth Support" <no-reply@beehealth.com>',
             to: email,
             subject: 'Reset Password BeeHealth',
-            html: `<p>Klik tautan berikut untuk mereset password Anda:</p><a href="${resetLink}">${resetLink}</a>`,
+            html: `
+                <h3>Permintaan Reset Password</h3>
+                <p>Klik tautan berikut untuk membuat password baru:</p>
+                <a href="${resetLink}" style="background-color: #FCD34D; padding: 10px 20px; color: black; text-decoration: none; border-radius: 5px; font-weight: bold;">Reset Password</a>
+                <p>Atau copy link ini: ${resetLink}</p>
+                <p>Link ini berlaku selama 1 jam.</p>
+            `,
         });
 
         res.status(200).json({ message: "Tautan reset password telah dikirim ke email Anda." });
     } catch (error) {
+        console.error("Error forgotPassword:", error);
         res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });
     }
 };
 
 export const resetPassword = async (req, res) => {
     try {
-        const { token, newPassword } = req.body;
+        // --- PERBAIKAN DI SINI ---
+        // Token diambil dari URL (req.params), bukan req.body
+        // Password baru diambil dari Body
+        const { token } = req.params; 
+        const { newPassword } = req.body;
 
         if (!token || !newPassword) {
             return res.status(400).json({message: "Token dan password baru wajib diisi."});
@@ -115,9 +127,10 @@ export const resetPassword = async (req, res) => {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         await UserModel.updatePasswordReset(user.id, hashedPassword)
 
-        res.status(200).json({ message: "Password berhasil direset." });
+        res.status(200).json({ message: "Password berhasil direset. Silakan login." });
 
     } catch (error) {
+        console.error("Error resetPassword:", error);
         res.status(500).json({ message: "Terjadi kesalahan server.", error: error.message });
     }
 };

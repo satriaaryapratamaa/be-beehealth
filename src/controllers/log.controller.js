@@ -9,43 +9,62 @@ const getJakartaDateString = (dateInput) => {
 
 export const logFood = async (req, res) => {
     const userId = req.user.userId;
-    // const { foodId, mealType, porsi} = req.body;
-    // const foodNama = parseFloat(req.body.foodNama);
-    const { foodNama, mealType} = req.body;
+    const { foodNama, mealType, tanggal } = req.body;
     const porsi = parseFloat(req.body.porsi);
-    // const foodNama = req.body.foodNama;
-    // const porsi = parseFloat(req.body.porsi);
-    // const  mealType  = req.body.mealType;
 
+    // 1. Validasi Input
     if (!foodNama || !mealType || !porsi) {
         return res.status(400).json({ message: "FoodNama, mealType, dan porsi wajib diisi." });
     } 
 
     try {
+        // 2. Cari Data Makanan
         const foodData = await prisma.food.findUnique({
             where: { nama: foodNama }
         });
+        
         if (!foodData) {
-            return res.status(404).json({ message: `Makanan dengan ID ${foodNama} tidak ditemukan. `});
+            return res.status(404).json({ message: `Makanan '${foodNama}' tidak ditemukan.`});
         }
-        const log = await LogModel.createFoodlog({ userId,foodId: foodData.id, foodNama, mealType, porsi });
 
-        // const caloriesIn = log.food.kalori * log.porsi;
+        // 3. Tentukan Tanggal Log
+        const logDate = tanggal ? new Date(tanggal) : new Date();
+
+        // 4. Simpan Log Makanan
+        const log = await LogModel.createFoodlog({ 
+            userId,
+            foodId: foodData.id, 
+            foodNama, 
+            mealType, 
+            porsi, 
+            tanggal: logDate 
+        });
+
+        // 5. Update Daily Summary (Kalori Masuk)
         const caloriesIn = foodData.kalori * porsi;
         await LogModel.upsertDailySummary(userId, log.tanggal, caloriesIn, 0);
+
+        // =========================================================
+        // 6. UPDATE STREAK USER (PENTING!)
+        // =========================================================
+        console.log(`[LOG] Mengupdate streak untuk user ${userId}...`);
+        await UserModel.updateUserStreak(userId, logDate);
+        // =========================================================
 
         res.status(200).json({ message: 'Log makanan berhasil ditambahkan', data: log });
         
     } catch (error) {
+        console.error("Error Log Food:", error);
         res.status(500).json({ message: 'Gagal mencatat makanan', error: error.message });
     }
 };
 
+// --- LOG EXERCISE ---
 export const logExercise = async (req, res) => {
     const userId = req.user?.userId;
+    let { exerciseId, namaKegiatan, durationInMinute, tanggal } = req.body;
     
-    let { exerciseId, namaKegiatan, durationInMinute } = req.body;
-    
+    // 1. Validasi Input
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
     if ((!exerciseId && !namaKegiatan) || !durationInMinute) {
@@ -53,17 +72,17 @@ export const logExercise = async (req, res) => {
     }
 
     try {
+        // 2. Cari Data Olahraga (Bisa via ID atau Nama)
         let exerciseData = null;
 
         if (exerciseId) {
             exerciseData = await prisma.exercise.findUnique({ where: { id: exerciseId } });
         } else if (namaKegiatan) {
-
             exerciseData = await prisma.exercise.findFirst({
                 where: {
                     namaKegiatan: {
                         equals: namaKegiatan,
-                        mode: 'insensitive' 
+                        mode: 'insensitive' // Case insensitive (Lari = lari)
                     }
                 }
             });
@@ -73,19 +92,32 @@ export const logExercise = async (req, res) => {
             return res.status(404).json({ message: `Olahraga '${namaKegiatan || exerciseId}' tidak ditemukan.` });
         }
 
+        // 3. Tentukan Tanggal Log
+        const logDate = tanggal ? new Date(tanggal) : new Date();
+
+        // 4. Simpan Log Olahraga
         const log = await LogModel.createExerciselog({ 
             userId, 
             exerciseId: exerciseData.id, 
-            durationInMinute: durationInMinute 
+            durationInMinute: durationInMinute,
+            tanggal: logDate 
         });
 
+        // 5. Update Daily Summary (Kalori Keluar)
         const caloriesOut = exerciseData.caloriesBurnPerMinute * parseInt(durationInMinute);
-        await LogModel.upsertDailySummary(userId, log.tanggal, 0, caloriesOut);
+        await LogModel.upsertDailySummary(userId, logDate, 0, caloriesOut);
+
+        // =========================================================
+        // 6. UPDATE STREAK USER (PENTING!)
+        // =========================================================
+        console.log(`[LOG] Mengupdate streak untuk user ${userId}...`);
+        await UserModel.updateUserStreak(userId, logDate);
+        // =========================================================
     
         res.status(200).json({ message: 'Log olahraga berhasil ditambahkan', data: log });
 
     } catch (error) {
-        console.error(error); // Cek terminal backend jika error lagi
+        console.error("Error Log Exercise:", error); 
         res.status(500).json({ message: 'Gagal mencatat olahraga', error: error.message });
     }
 };
@@ -109,25 +141,25 @@ export const getDailyLogs = async (req, res) => {
     }
 };
 
-const calculateNewStreak = (currentStreak, lastLogDate, todayDateInput) => {
-    const todayStr = getJakartaDateString(todayDateInput);
-    const lastLogStr = lastLogDate ? getJakartaDateString(lastLogDate) : null;
+// const calculateNewStreak = (currentStreak, lastLogDate, todayDateInput) => {
+//     const todayStr = getJakartaDateString(todayDateInput);
+//     const lastLogStr = lastLogDate ? getJakartaDateString(lastLogDate) : null;
 
-    if (!lastLogStr) return 1;
-    if (todayStr === lastLogStr) return currentStreak;
+//     if (!lastLogStr) return 1;
+//     if (todayStr === lastLogStr) return currentStreak;
 
-    const todayDateObj = new Date(todayStr);
-    const lastLogDateObj = new Date(lastLogStr);
+//     const todayDateObj = new Date(todayStr);
+//     const lastLogDateObj = new Date(lastLogStr);
     
-    const diffTime = Math.abs(todayDateObj - lastLogDateObj);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+//     const diffTime = Math.abs(todayDateObj - lastLogDateObj);
+//     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
 
-    if (diffDays === 1) {
-        return currentStreak + 1;
-    } else {
-        return 1;
-    }
-};
+//     if (diffDays === 1) {
+//         return currentStreak + 1;
+//     } else {
+//         return 1;
+//     }
+// };
 
 export const deleteFoodLog = async (req, res) => {
     const { id } = req.params;
@@ -171,7 +203,7 @@ export const deleteExerciseLog = async (req, res) => {
 
         const deletedLog = await LogModel.deleteExerciseLogById(id);
 
-        const caloriesToSubtract = deletedLog.exercise.caloriesBurnPerMinute * deletedLog.durationInMinute;
+        const caloriesToSubtract = deletedLog.exercise.caloriesBurnPerMinute * deletedLog.durationInMinutes;
 
         await LogModel.upsertDailySummary(userId, deletedLog.tanggal, 0, -caloriesToSubtract);
 
@@ -182,3 +214,4 @@ export const deleteExerciseLog = async (req, res) => {
         res.status(500).json({ message: "Gagal menghapus log", error: error.message });
     }
 };
+
