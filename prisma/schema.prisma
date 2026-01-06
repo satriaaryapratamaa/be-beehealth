@@ -25,6 +25,12 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  resetToken       String?  @unique // Menyimpan kode OTP sementara
+  resetTokenExpiry DateTime? // Menyimpan waktu kadaluarsa OTP
+
+  streak      Int     @default(0)
+  lastLogDate DateTime?
+
   // Data dari Mockup "Calculate your calorie!"
   // Dibuat opsional (?) agar user bisa register dulu
   // baru mengisi ini di halaman 'calculate'
@@ -72,7 +78,7 @@ model Food {
   protein Float
   carbs   Float
   fat     Float
-
+  image   String?
   // Relasi: Makanan ini bisa dilog oleh banyak user
   logs FoodLog[]
 }

@@ -38,11 +38,9 @@ export const getRekomendasi = async (req, res) => {
         }
     });
 
-    // 4. Hitung Kalori Bersih & Sisa Kalori
     const currentNetCalories = consumed.calories - burnedCalories;
     const remainingCalories = userProfile.targetCalories - currentNetCalories;
 
-    // 5. Siapkan Data Macro untuk Frontend (Progress Bar)
     const macros = {
         protein: {
             target: userProfile.targetProtein || 0,
@@ -70,8 +68,8 @@ export const getRekomendasi = async (req, res) => {
 
     if (status === "NEEDS_FOOD" || status === "MAINTAINED") {
         suggestedFoods = allFoods
-            .sort(() => 0.5 - Math.random()) // Shuffle array
-            .slice(0, 6); // Ambil 6 item pertama
+            .sort(() => 0.5 - Math.random()) 
+            .slice(0, 6); 
     }
 
     if (status === "NEEDS_EXERCISE") {
@@ -87,11 +85,11 @@ export const getRekomendasi = async (req, res) => {
         consumed: Math.round(consumed.calories),
         burned: Math.round(burnedCalories),
         currentNet: Math.round(currentNetCalories),
-        remaining: Math.round(remainingCalories) // Angka ini yang dipakai frontend
+        remaining: Math.round(remainingCalories) 
       },
-      macros, // Data untuk progress bar Protein/Carbs/Fat
+      macros, 
       recommendations: {
-        food: suggestedFoods, // Array makanan rekomendasi
+        food: suggestedFoods, 
         exercise: suggestedExercises
       }
     });

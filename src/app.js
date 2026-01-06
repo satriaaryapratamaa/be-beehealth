@@ -13,7 +13,7 @@ export function createApp(prisma) {
     const app = express();
 
     app.use(cors({
-        origin: ['http://localhost:5173', 'http://localhost:3000', 'https://numbers-subessential-inarguably.ngrok-free.dev'],
+        origin: ['http://localhost:5173', 'http://localhost:3000', 'https://numbers-subessential-inarguably.ngrok-free.dev','https://tubesimpalbeehealth.netlify.app'],
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
         allowedHeaders: [

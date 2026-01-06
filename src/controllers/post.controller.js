@@ -13,16 +13,9 @@ export const createPost = async (req, res) => {
         imageUrl = req.file.path.replace(/\\/g, '/');
     }
 
-    // if (req.file) {
-    //     imagePath = req.file.filename;
-    // }
-
     if (!deskripsi) {
         return res.status(400).json({ message: "Deskripsi wajib diisi." });
-        // if (imagePath && fs.existsSync(req.file.path)) {
-        //     fs.unlinkSync(req.file.path);
-        // }
-        // return res.status(400).json({ message: "Deskripsi wajib diisi." });
+            
     }
 
     try {

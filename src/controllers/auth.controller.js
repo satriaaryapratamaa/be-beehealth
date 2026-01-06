@@ -81,10 +81,7 @@ export const forgotPassword = async (req, res) => {
             },
         });
 
-        // --- PERBAIKAN DI SINI ---
-        // 1. Ganti port ke 5173 (Frontend React)
-        // 2. Ganti format jadi slash (/) agar rapi dan ditangkap React Router
-        const resetLink = `http://localhost:5173/reset-password/${resetToken}`;
+        const resetLink = `'https://tubesimpalbeehealth.netlify.app/reset-password/${resetToken}`;
 
         await transporter.sendMail({
             from: '"BeeHealth Support" <no-reply@beehealth.com>',
@@ -108,9 +105,6 @@ export const forgotPassword = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
     try {
-        // --- PERBAIKAN DI SINI ---
-        // Token diambil dari URL (req.params), bukan req.body
-        // Password baru diambil dari Body
         const { token } = req.params; 
         const { newPassword } = req.body;
 
